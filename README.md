@@ -595,67 +595,7 @@ MIT License - See LICENSE file for details
 
 ---
 
-## 🤝 Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create feature branch
-3. Submit pull request
-
----
-
-## � Publishing to NuGet
-
-MauiOtpKit uses **GitHub Actions** for automated NuGet package publishing.
-
-### Quick Steps
-
-1. Update version in `.csproj` files:
-   ```xml
-   <Version>1.0.1</Version>
-   ```
-
-2. Add NuGet API key to GitHub Secrets:
-   - Go to Settings → Secrets → `NUGET_API_KEY`
-
-3. Push to main or create Release:
-   ```bash
-   git push origin main
-   ```
-
-4. GitHub Actions automatically builds and publishes packages!
-
-### Full Guide
-
-See [docs/NUGET_PUBLISHING.md](docs/NUGET_PUBLISHING.md) for:
-- Detailed setup instructions
-- API key generation
-- Troubleshooting
-- Local build scripts
-- Manual publishing (alternative)
-
-### Build Scripts
-
-**Windows (PowerShell)**:
-```bash
-.\build-and-pack.ps1
-```
-
-**Linux/macOS (Bash)**:
-```bash
-chmod +x build-and-pack.sh
-./build-and-pack.sh
-```
-
----
-
-## �📞 Support
-
-- **Issues**: GitHub Issues
-- **Discussions**: GitHub Discussions
-- **Email**: support@mauiotpkit.dev
-
----
+--
 
 ## 🎓 Advanced Topics
 
@@ -708,5 +648,3 @@ var result = await retryPolicy.ExecuteAsync(() =>
 ```
 
 ---
-
-**Built with ❤️ for the .NET MAUI community**
