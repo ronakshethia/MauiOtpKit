@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.Maui.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>
+			net8.0-android;net8.0-ios;
+			net9.0-android;net9.0-ios;
+			net10.0-android;net10.0-ios
+		</TargetFrameworks>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+
+		<!-- Android Configuration -->
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+
+		<!-- iOS Configuration -->
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
+
+		<!-- NuGet Package Properties -->
+		<PackageId>MauiOtpKit</PackageId>
+		<Version>1.0.0</Version>
+		<Authors>Ronak Shetiya</Authors>
+		<Description>MauiOtpKit is a modern, production-grade OTP (One-Time Password) framework built specifically for .NET MAUI applications. It provides a complete solution for handling OTP-based authentication flows across Android and iOS with a clean, scalable, and developer-friendly architecture. On Android, MauiOtpKit integrates with the SMS Retriever API to automatically read OTP messages without requiring SMS permissions, ensuring a secure and seamless user experience. On iOS, it leverages native OTP autofill capabilities to enable quick and accurate code entry. The library includes built-in support for OTP parsing, validation, expiration handling, retry limits, and extensibility for custom providers such as email OTP, WhatsApp OTP, or backend-driven verification systems. MauiOtpKit is designed with modular architecture and dependency injection, making it easy to integrate, test, and extend. It supports .NET 8, .NET 9, and .NET 10, ensuring compatibility with current and future MAUI applications. Key features: Android SMS OTP auto-read using SMS Retriever API, iOS OTP autofill support, secure OTP validation with expiry and retry handling, clean architecture with platform abstraction, lightweight and high-performance design, extensible for multiple OTP delivery providers, multi-target support for .NET 8, 9, and 10. MauiOtpKit fills a critical gap in the .NET MAUI ecosystem by providing a unified, production-ready OTP solution that reduces development time and improves user authentication experiences.</Description>
+		<PackageProjectUrl>https://github.com/yourusername/MauiOtpKit</PackageProjectUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<RepositoryUrl>https://github.com/yourusername/MauiOtpKit</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>otp;maui-otp;dotnet-maui-otp;otp-reader;sms-retriever;sms-retriever-maui;auto-read-otp;android-maui;otp-validation;maui-authentication;otp-autofill;ios-otp;mfa;authentication;maui;dotnet;sms;android;ios;two-factor-authentication;xamarin-otp</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<MauiFont Include="Resources\Fonts\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- Core OTP package -->
+		<ProjectReference Include="..\MauiOtpKit.Core\MauiOtpKit.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Maui.Controls" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
+	</ItemGroup>
+
+	<!-- Android-specific dependencies -->
+	<ItemGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<PackageReference Include="Xamarin.GooglePlayServices.Basement" Version="118.2.0" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Auth" Version="121.0.0.2" />
+	</ItemGroup>
+
+</Project>
