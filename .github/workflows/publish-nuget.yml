@@ -48,6 +48,7 @@ jobs:
       run: ls -la ./nupkg
 
     - name: Push to NuGet.org
+      if: github.repository_owner == github.actor || github.event_name == 'release'
       run: |
         dotnet nuget push ./nupkg/*.nupkg \
           --api-key ${{ secrets.NUGET_API_KEY }} \
@@ -73,7 +74,7 @@ jobs:
 
     - name: Upload artifacts
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: nuget-packages
         path: ./nupkg/
