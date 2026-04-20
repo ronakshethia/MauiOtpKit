@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MauiOtpKit.Sample.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundColor}}">
+
+    <ScrollView Padding="20">
+        <VerticalStackLayout Spacing="20" VerticalOptions="Start">
+
+            <!-- Header -->
+            <Label
+                FontSize="32"
+                FontAttributes="Bold"
+                Text="OTP Validation Demo"
+                HorizontalTextAlignment="Center"
+                TextColor="{AppThemeBinding Light={StaticResource PrimaryColor}}" />
+
+            <Label
+                FontSize="16"
+                Text="MauiOtpKit - Cross-platform OTP Solution"
+                HorizontalTextAlignment="Center"
+                TextColor="Gray" />
+
+            <!-- Status Section -->
+            <Frame BorderColor="{StaticResource SecondaryColor}" CornerRadius="10" Padding="15">
+                <VerticalStackLayout Spacing="10">
+                    <Label
+                        FontSize="14"
+                        FontAttributes="Bold"
+                        Text="Status" />
+                    <Label
+                        x:Name="StatusLabel"
+                        FontSize="14"
+                        Text="Initializing..."
+                        TextColor="Blue" />
+                    <Label
+                        x:Name="ErrorLabel"
+                        FontSize="12"
+                        Text=""
+                        TextColor="Red" />
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- OTP Entry Section -->
+            <VerticalStackLayout Spacing="10">
+                <Label
+                    FontSize="16"
+                    FontAttributes="Bold"
+                    Text="Enter OTP Code" />
+
+                <Entry
+                    x:Name="OtpEntry"
+                    Placeholder="000000"
+                    PlaceholderColor="LightGray"
+                    FontSize="24"
+                    FontAttributes="Bold"
+                    HorizontalTextAlignment="Center"
+                    Keyboard="Numeric"
+                    MaxLength="6"
+                    CharacterSpacing="5" />
+
+                <Label
+                    FontSize="12"
+                    Text="iOS: Autofill is enabled (UITextContentType.OneTimeCode)"
+                    TextColor="Gray"
+                    FontAttributes="Italic" />
+            </VerticalStackLayout>
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                <Button
+                    Grid.Column="0"
+                    Text="Validate"
+                    Clicked="OnValidateClicked"
+                    BackgroundColor="{StaticResource PrimaryColor}"
+                    TextColor="White"
+                    CornerRadius="8" />
+
+                <Button
+                    Grid.Column="1"
+                    Text="Reset"
+                    Clicked="OnResetClicked"
+                    BackgroundColor="Gray"
+                    TextColor="White"
+                    CornerRadius="8" />
+            </Grid>
+
+            <!-- Info Section -->
+            <Frame BorderColor="{StaticResource SecondaryColor}" CornerRadius="10" Padding="15" BackgroundColor="#F5F5F5">
+                <VerticalStackLayout Spacing="10">
+                    <Label
+                        FontSize="14"
+                        FontAttributes="Bold"
+                        Text="How it works:" />
+
+                    <Label
+                        FontSize="12"
+                        Text="• Android: SMS Retriever API automatically detects SMS and extracts OTP" />
+
+                    <Label
+                        FontSize="12"
+                        Text="• iOS: Autofill support - approve OTP in notification" />
+
+                    <Label
+                        FontSize="12"
+                        Text="• Validation: Code validated with expiry and attempt limits" />
+
+                    <Label
+                        FontSize="12"
+                        Text="• Security: Platform-specific, no READ_SMS permission needed (Android)" />
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

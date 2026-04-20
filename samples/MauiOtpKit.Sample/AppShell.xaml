@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="MauiOtpKit.Sample.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    FlyoutBehavior="Disabled">
+
+    <TabBar>
+        <ShellContent
+            Title="OTP Demo"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage"
+            xmlns:local="clr-namespace:MauiOtpKit.Sample" />
+    </TabBar>
+
+</Shell>

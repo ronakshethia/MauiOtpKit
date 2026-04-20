@@ -1,0 +1,89 @@
+name: Publish to NuGet
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'MauiOtpKit.Core/MauiOtpKit.Core.csproj'
+      - 'MauiOtpKit/MauiOtpKit.csproj'
+      - '.github/workflows/publish-nuget.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      api_key:
+        description: 'NuGet API Key'
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build -c Release --no-restore
+
+    - name: Pack MauiOtpKit.Core
+      run: dotnet pack MauiOtpKit.Core/MauiOtpKit.Core.csproj -c Release -o ./nupkg --no-build
+
+    - name: Pack MauiOtpKit
+      run: dotnet pack MauiOtpKit/MauiOtpKit.csproj -c Release -o ./nupkg --no-build
+
+    - name: List generated packages
+      run: ls -la ./nupkg
+
+    - name: Push to NuGet.org
+      run: |
+        dotnet nuget push ./nupkg/*.nupkg \
+          --api-key ${{ secrets.NUGET_API_KEY }} \
+          --source https://api.nuget.org/v3/index.json \
+          --skip-duplicate
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+    - name: Create GitHub Release Summary
+      if: success()
+      run: |
+        echo "## 🎉 NuGet Packages Published Successfully" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Published Packages:" >> $GITHUB_STEP_SUMMARY
+        echo "- **MauiOtpKit.Core** - https://www.nuget.org/packages/MauiOtpKit.Core/" >> $GITHUB_STEP_SUMMARY
+        echo "- **MauiOtpKit** - https://www.nuget.org/packages/MauiOtpKit/" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Installation:" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+        echo "dotnet add package MauiOtpKit.Core" >> $GITHUB_STEP_SUMMARY
+        echo "dotnet add package MauiOtpKit" >> $GITHUB_STEP_SUMMARY
+        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+    - name: Upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: nuget-packages
+        path: ./nupkg/
+
+    - name: Handle errors
+      if: failure()
+      run: |
+        echo "❌ NuGet package publishing failed!"
+        echo "Please check:"
+        echo "1. Verify NUGET_API_KEY secret is configured in GitHub"
+        echo "2. Check that version numbers are incremented in .csproj files"
+        echo "3. Ensure no duplicate versions exist on NuGet.org"
+        exit 1
