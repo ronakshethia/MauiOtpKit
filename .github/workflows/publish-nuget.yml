@@ -32,17 +32,17 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Restore dependencies
-      run: dotnet restore
+    - name: Restore MauiOtpKit.Core
+      run: dotnet restore MauiOtpKit.Core/MauiOtpKit.Core.csproj
 
-    - name: Build solution
-      run: dotnet build -c Release --no-restore
+    - name: Build MauiOtpKit.Core
+      run: dotnet build MauiOtpKit.Core/MauiOtpKit.Core.csproj -c Release --no-restore
 
     - name: Pack MauiOtpKit.Core
       run: dotnet pack MauiOtpKit.Core/MauiOtpKit.Core.csproj -c Release -o ./nupkg --no-build
 
-    - name: Pack MauiOtpKit
-      run: dotnet pack MauiOtpKit/MauiOtpKit.csproj -c Release -o ./nupkg --no-build
+    # Note: MauiOtpKit (platform-specific) requires MAUI SDK
+    # For Windows/macOS builds, use separate workflow or build locally
 
     - name: List generated packages
       run: ls -la ./nupkg
@@ -63,8 +63,8 @@ jobs:
         echo "## 🎉 NuGet Packages Published Successfully" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Published Packages:" >> $GITHUB_STEP_SUMMARY
-        echo "- **MauiOtpKit.Core** - https://www.nuget.org/packages/MauiOtpKit.Core/" >> $GITHUB_STEP_SUMMARY
-        echo "- **MauiOtpKit** - https://www.nuget.org/packages/MauiOtpKit/" >> $GITHUB_STEP_SUMMARY
+        echo "- **MauiOtpKit.Core** (Linux) ✅ - https://www.nuget.org/packages/MauiOtpKit.Core/" >> $GITHUB_STEP_SUMMARY
+        echo "- **MauiOtpKit** (Windows/macOS) - https://www.nuget.org/packages/MauiOtpKit/" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "### Installation:" >> $GITHUB_STEP_SUMMARY
         echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
