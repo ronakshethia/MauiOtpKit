@@ -27,15 +27,8 @@ jobs:
       with:
         dotnet-version: '8.0.x'
 
-    - name: Install MAUI workload
-      run: |
-        dotnet workload restore
-        dotnet workload install maui -s https://aka.ms/dotnet/maui/latest-release-feed
-      shell: pwsh
-      continue-on-error: true
-
-    - name: Verify workload installation
-      run: dotnet workload list
+    - name: Restore SDK (from global.json)
+      run: dotnet --version
       shell: pwsh
 
     - name: Restore dependencies
