@@ -74,7 +74,7 @@ internal class SmsRetrievalClient
             {
                 try
                 {
-                    Application.Context.UnregisterReceiver(_broadcastReceiver);
+                    global::Android.App.Application.Context.UnregisterReceiver(_broadcastReceiver);
                 }
                 catch { /* Receiver already unregistered */ }
             }
@@ -148,7 +148,7 @@ internal class SmsBroadcastReceiver : BroadcastReceiver
 /// </summary>
 internal class SmsRetrievalTask : IDisposable
 {
-    private Android.Gms.Tasks.Task? _task;
+    private global::Android.Gms.Tasks.Task? _task;
     private readonly ILogger? _logger;
 
     public SmsRetrievalTask(ILogger? logger = null)
@@ -163,7 +163,7 @@ internal class SmsRetrievalTask : IDisposable
     {
         try
         {
-            var client = SmsRetriever.GetClient(Application.Context);
+            var client = SmsRetriever.GetClient(global::Android.App.Application.Context);
             
             _task = client.StartSmsUserConsent(null); // null = listen to all senders
             

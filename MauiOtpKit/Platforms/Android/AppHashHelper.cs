@@ -27,7 +27,8 @@ internal static class AppHashHelper
     {
         try
         {
-            var packageName = context.PackageName;
+            var packageName = context.PackageName
+                ?? throw new InvalidOperationException("Package name is unavailable");
             var certificateHash = GetSignatureHash(context, packageName);
             
             // Combine package name and certificate hash
@@ -48,16 +49,17 @@ internal static class AppHashHelper
         var packageManager = context.PackageManager;
         
 #pragma warning disable CS0618 // Type or member is obsolete
-        var packageInfo = packageManager?.GetPackageInfo(packageName, 
-            Android.Content.PM.PackageInfoFlags.Signatures);
+        var packageInfo = packageManager?.GetPackageInfo(packageName,
+            global::Android.Content.PM.PackageInfoFlags.Signatures);
 #pragma warning restore CS0618
 
-        if (packageInfo?.Signatures == null || packageInfo.Signatures.Length == 0)
+        if (packageInfo?.Signatures == null || packageInfo.Signatures.Count == 0)
             throw new InvalidOperationException("No signatures found");
 
         // Use the first signature
         var signature = packageInfo.Signatures[0];
-        var publicKey = signature.ToByteArray();
+        var publicKey = signature.ToByteArray()
+            ?? throw new InvalidOperationException("Signature public key is unavailable");
 
         return ComputeHash(publicKey);
     }

@@ -1,4 +1,5 @@
 using MauiOtpKit.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace MauiOtpKit.Sample;
 

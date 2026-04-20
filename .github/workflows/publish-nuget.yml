@@ -1,90 +1,36 @@
-name: Publish to NuGet
+name: Publish NuGet
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'MauiOtpKit.Core/MauiOtpKit.Core.csproj'
-      - 'MauiOtpKit/MauiOtpKit.csproj'
-      - '.github/workflows/publish-nuget.yml'
   release:
     types: [published]
   workflow_dispatch:
-    inputs:
-      api_key:
-        description: 'NuGet API Key'
-        required: true
-        type: string
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
-    
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: '8.0.x'
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
 
-    - name: Restore MauiOtpKit.Core
-      run: dotnet restore MauiOtpKit.Core/MauiOtpKit.Core.csproj
+      - name: Install MAUI workloads
+        run: dotnet workload install maui-android maui-ios
 
-    - name: Build MauiOtpKit.Core
-      run: dotnet build MauiOtpKit.Core/MauiOtpKit.Core.csproj -c Release --no-restore
+      - name: Restore
+        run: dotnet restore "MauiOtpKit/MauiOtpKit.csproj"
 
-    - name: Pack MauiOtpKit.Core
-      run: dotnet pack MauiOtpKit.Core/MauiOtpKit.Core.csproj -c Release -o ./nupkg --no-build
+      - name: Build
+        run: dotnet build "MauiOtpKit/MauiOtpKit.csproj" -c Release --no-restore
 
-    # Note: MauiOtpKit (platform-specific) requires MAUI SDK
-    # For Windows/macOS builds, use separate workflow or build locally
+      - name: Pack
+        run: dotnet pack "MauiOtpKit/MauiOtpKit.csproj" -c Release --no-build -o "${{ github.workspace }}/artifacts"
 
-    - name: List generated packages
-      run: ls -la ./nupkg
-
-    - name: Push to NuGet.org
-      if: github.repository_owner == github.actor || github.event_name == 'release'
-      run: |
-        dotnet nuget push ./nupkg/*.nupkg \
-          --api-key ${{ secrets.NUGET_API_KEY }} \
-          --source https://api.nuget.org/v3/index.json \
-          --skip-duplicate
-      env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-
-    - name: Create GitHub Release Summary
-      if: success()
-      run: |
-        echo "## 🎉 NuGet Packages Published Successfully" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Published Packages:" >> $GITHUB_STEP_SUMMARY
-        echo "- **MauiOtpKit.Core** (Linux) ✅ - https://www.nuget.org/packages/MauiOtpKit.Core/" >> $GITHUB_STEP_SUMMARY
-        echo "- **MauiOtpKit** (Windows/macOS) - https://www.nuget.org/packages/MauiOtpKit/" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Installation:" >> $GITHUB_STEP_SUMMARY
-        echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-        echo "dotnet add package MauiOtpKit.Core" >> $GITHUB_STEP_SUMMARY
-        echo "dotnet add package MauiOtpKit" >> $GITHUB_STEP_SUMMARY
-        echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-
-    - name: Upload artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: nuget-packages
-        path: ./nupkg/
-
-    - name: Handle errors
-      if: failure()
-      run: |
-        echo "❌ NuGet package publishing failed!"
-        echo "Please check:"
-        echo "1. Verify NUGET_API_KEY secret is configured in GitHub"
-        echo "2. Check that version numbers are incremented in .csproj files"
-        echo "3. Ensure no duplicate versions exist on NuGet.org"
-        exit 1
+      - name: Push to NuGet.org
+        run: dotnet nuget push "${{ github.workspace }}/artifacts/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source "https://api.nuget.org/v3/index.json" --skip-duplicate
