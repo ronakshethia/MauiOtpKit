@@ -1,0 +1,122 @@
+name: Publish to NuGet (Windows - Full Build)
+
+on:
+  workflow_dispatch:  # Manual trigger for full Windows build
+    inputs:
+      publish:
+        description: 'Publish to NuGet.org'
+        required: true
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+        default: 'false'
+
+jobs:
+  publish-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: |
+          8.0.x
+          9.0.x
+          10.0.x
+
+    - name: Install MAUI workload
+      run: dotnet workload install maui
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build -c Release --no-restore
+
+    - name: Pack MauiOtpKit.Core
+      run: dotnet pack MauiOtpKit.Core/MauiOtpKit.Core.csproj -c Release -o ./nupkg --no-build
+
+    - name: Pack MauiOtpKit (Platform-specific)
+      run: dotnet pack MauiOtpKit/MauiOtpKit.csproj -c Release -o ./nupkg --no-build
+
+    - name: List generated packages
+      run: Get-ChildItem ./nupkg -Filter *.nupkg | ForEach-Object { Write-Host $_.FullName }
+      shell: pwsh
+
+    - name: Push to NuGet.org
+      if: github.event.inputs.publish == 'true' && (github.repository_owner == github.actor)
+      run: |
+        dotnet nuget push ./nupkg/*.nupkg `
+          --api-key ${{ secrets.NUGET_API_KEY }} `
+          --source https://api.nuget.org/v3/index.json `
+          --skip-duplicate
+      shell: pwsh
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
+    - name: Create GitHub Release Summary
+      if: success()
+      run: |
+        $packages = Get-ChildItem ./nupkg -Filter *.nupkg
+        Write-Host "## 🎉 NuGet Packages Built Successfully" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "### Built Packages:" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "- **MauiOtpKit.Core** (Cross-platform) ✅" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "  - https://www.nuget.org/packages/MauiOtpKit.Core/" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "- **MauiOtpKit** (Android + iOS) ✅" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "  - https://www.nuget.org/packages/MauiOtpKit/" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "### Package Details:" >> $env:GITHUB_STEP_SUMMARY
+        foreach ($pkg in $packages) {
+          Write-Host "- $($pkg.Name) ($([Math]::Round($pkg.Length/1KB, 2)) KB)" >> $env:GITHUB_STEP_SUMMARY
+        }
+        Write-Host "" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "### Installation:" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host '```bash' >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "dotnet add package MauiOtpKit.Core" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "dotnet add package MauiOtpKit" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host '```' >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "### Platform Support:" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "| Platform | Features |" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "|----------|----------|" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "| Android | SMS Retriever API auto-read |" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "| iOS | OTP autofill support |" >> $env:GITHUB_STEP_SUMMARY
+        Write-Host "| .NET | 8.0, 9.0, 10.0 |" >> $env:GITHUB_STEP_SUMMARY
+      shell: pwsh
+
+    - name: Upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: nuget-packages-windows
+        path: ./nupkg/
+        retention-days: 30
+
+    - name: Handle build errors
+      if: failure()
+      run: |
+        Write-Host "❌ Build failed!" -ForegroundColor Red
+        Write-Host "Common causes:" -ForegroundColor Yellow
+        Write-Host "1. MAUI workload not installed" -ForegroundColor Yellow
+        Write-Host "2. Android/iOS SDKs not available" -ForegroundColor Yellow
+        Write-Host "3. Dependencies not restored" -ForegroundColor Yellow
+        exit 1
+      shell: pwsh
+
+    - name: Handle publish errors
+      if: failure() && github.event.inputs.publish == 'true'
+      run: |
+        Write-Host "❌ Publishing failed!" -ForegroundColor Red
+        Write-Host "Verify:" -ForegroundColor Yellow
+        Write-Host "1. NUGET_API_KEY secret is configured" -ForegroundColor Yellow
+        Write-Host "2. Version is incremented in .csproj files" -ForegroundColor Yellow
+        Write-Host "3. No duplicate versions on NuGet.org" -ForegroundColor Yellow
+        exit 1
+      shell: pwsh
