@@ -2,8 +2,5 @@
   "sdk": {
     "version": "8.0.0",
     "rollForward": "latestFeature"
-  },
-  "msbuild-sdks": {
-    "Microsoft.Maui.Sdk": "8.0.40"
   }
 }
