@@ -4,6 +4,12 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+    inputs:
+      publish_to_nuget:
+        description: "Publish package to NuGet.org"
+        required: true
+        default: true
+        type: boolean
 
 jobs:
   publish:
@@ -32,10 +38,39 @@ jobs:
       - name: Pack
         run: dotnet pack "MauiOtpKit/MauiOtpKit.csproj" -c Release --no-build -o "${{ github.workspace }}/artifacts"
 
-      - name: Push to NuGet.org
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MauiOtpKit-nuget-package
+          path: ${{ github.workspace }}/artifacts/*.nupkg
+          if-no-files-found: error
+
+      - name: Validate NuGet API key
+        if: ${{ github.event_name == 'release' || inputs.publish_to_nuget }}
         shell: pwsh
         run: |
-          $packages = Get-ChildItem -Path "${{ github.workspace }}/artifacts" -Filter *.nupkg
+          if ([string]::IsNullOrWhiteSpace("${{ secrets.NUGET_API_KEY }}")) {
+            throw "GitHub secret NUGET_API_KEY is missing. Add it in Settings > Secrets and variables > Actions."
+          }
+
+      - name: Show package details
+        shell: pwsh
+        run: |
+          $packages = Get-ChildItem -Path "${{ github.workspace }}/artifacts" -Filter *.nupkg | Where-Object { $_.Name -notlike "*.symbols.nupkg" }
+          if (-not $packages) {
+            throw "No .nupkg files found in ${{ github.workspace }}/artifacts"
+          }
+
+          foreach ($package in $packages) {
+            $sizeKb = [Math]::Round($package.Length / 1KB, 2)
+            Write-Host "Package: $($package.Name) | Size: $sizeKb KB | FullPath: $($package.FullName)"
+          }
+
+      - name: Push to NuGet.org
+        if: ${{ github.event_name == 'release' || inputs.publish_to_nuget }}
+        shell: pwsh
+        run: |
+          $packages = Get-ChildItem -Path "${{ github.workspace }}/artifacts" -Filter *.nupkg | Where-Object { $_.Name -notlike "*.symbols.nupkg" }
           if (-not $packages) {
             throw "No .nupkg files found in ${{ github.workspace }}/artifacts"
           }
