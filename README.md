@@ -2,6 +2,10 @@
 
 **Production-grade, cross-platform OTP solution for .NET MAUI**
 
+NuGet:
+- https://www.nuget.org/packages/Ronak.MauiOtpKit
+- https://www.nuget.org/packages/Ronak.MauiOtpKit.Core
+
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![NuGet](https://img.shields.io/badge/NuGet-1.0.0-blue)
 ![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%209.0%20%7C%2010.0-512BD4)
@@ -53,8 +57,8 @@
 Install from NuGet:
 
 ```bash
-dotnet add package MauiOtpKit
-dotnet add package MauiOtpKit.Core
+dotnet add package Ronak.MauiOtpKit
+dotnet add package Ronak.MauiOtpKit.Core
 ```
 
 ### Configuration
